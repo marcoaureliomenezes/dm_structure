@@ -1,0 +1,125 @@
+version: '3'
+services:
+
+  # HADOOP SERVICES
+  namenode:
+    extends:
+      file: docker-ap-hadoop-services.yml
+      service: namenode
+
+  datanode:
+    extends:
+      file: docker-ap-hadoop-services.yml
+      service: datanode
+    depends_on:
+      - namenode
+      
+  # HIVE SERVICES
+  hive-metastore:
+    extends:
+      file: docker-ap-hive-services.yml
+      service: hive-metastore  
+    depends_on:
+      - namenode
+      - datanode
+      - postgres
+
+  hive-server:
+    extends:
+      file: docker-ap-hive-services.yml
+      service: hive-server  
+    depends_on:
+      - hive-metastore
+
+  # SPARK SERVICES
+  spark-master:
+    extends:
+      file: docker-ap-spark-services.yml
+      service: spark-master  
+
+  spark-worker:
+    extends:
+      file: docker-ap-spark-services.yml
+      service: spark-worker
+    depends_on:
+      - spark-master
+
+  ######################################################
+  # UTILS SERVICES
+
+  mysql:
+    extends:
+      file: docker-utils-services.yml
+      service: mysql  
+
+  # hue:
+  #   extends:
+  #     file: docker-utils-services.yml
+  #     service: hue  
+  #   depends_on:
+  #     - hive-server
+  #     - postgres
+
+
+  # nifi01:
+  #   extends:
+  #     file: docker-utils-services.yml
+  #     service: nifi01
+  #   depends_on:
+  #     - zookeeper
+
+  # nifi02:
+  #   extends:
+  #     file: docker-utils-services.yml
+  #     service: nifi02
+  #   depends_on:
+  #     - zookeeper
+
+  # nifi03:
+  #   extends:
+  #     file: docker-utils-services.yml
+  #     service: nifi03
+  #   depends_on:
+  #     - zookeeper
+
+  ######################################################
+  # AIRFLOW SERVICES
+
+  postgres:
+    extends:
+      file: docker-ap-airflow-services.yml
+      service: postgres
+
+  airflow:
+    extends:
+      file: docker-ap-airflow-services.yml
+      service: airflow
+
+  ######################################################
+  # KAFKA SERVICES
+
+  zookeeper:
+    extends:
+      file: docker-ap-kafka-services.yml
+      service: zookeeper
+
+  kafka:
+    extends:
+      file: docker-ap-kafka-services.yml
+      service: kafka
+    depends_on:
+      - zookeeper
+
+  control-center:
+    extends:
+      file: docker-ap-kafka-services.yml
+      service: control-center
+    depends_on:
+      - kafka
+
+######################################################
+# NETWORK
+
+networks:
+  default:
+    name: airflow-network

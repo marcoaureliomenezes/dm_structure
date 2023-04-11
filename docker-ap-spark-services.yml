@@ -1,0 +1,41 @@
+services:
+
+  spark-master:
+    build: ./docker/spark/spark-master
+    restart: always
+    container_name: spark-master
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"
+    ports:
+      - "32766:8082"
+      - "32765:7077"
+    volumes:
+      - ./mnt/spark/apps:/opt/spark-apps
+      - ./mnt/spark/data:/opt/spark-data
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "spark-master", "8082" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
+  spark-worker:
+    build: ./docker/spark/spark-worker
+    container_name: spark-worker1
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"
+    ports:
+      - "32764:8081"
+    volumes:
+      - ./mnt/spark/apps:/opt/spark-apps
+      - ./mnt/spark/data:/opt/spark-data
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "spark-worker1", "8081" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10

@@ -1,0 +1,92 @@
+version: '2.1'
+services:
+  
+  ######################################################
+  # UTILS SERVICES
+  ######################################################
+
+  hue:
+    build: ./docker/hue
+    restart: always
+    container_name: hadoop-hue
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"
+    ports:
+      - "32762:8888"
+    volumes:
+      - ./mnt/hue/hue.ini:/usr/share/hue/desktop/conf/z-hue.ini
+    environment:
+      - SERVICE_PRECONDITION=hive-server:10000 postgres:5432
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "hue", "8888" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+      
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: mainnet
+    volumes:
+      - /opt/mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        ["CMD", 'mysqladmin', 'ping', '-h', 'mysql', '-u', 'root', '-p$$MYSQL_ROOT_PASSWORD']
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
+
+  nifi01:
+    container_name: nifi01
+    build: ./docker/nifi
+  
+    ports:
+      - 6980:8080
+    environment:
+      - NIFI_WEB_HTTP_PORT=8080
+      - NIFI_CLUSTER_IS_NODE=true
+      - NIFI_CLUSTER_NODE_PROTOCOL_PORT=8082
+      - NIFI_ZK_CONNECT_STRING=zookeeper:2181
+      - NIFI_ELECTION_MAX_WAIT=1 min
+
+  # nifi02:
+  #   image: apache/nifi:latest
+  #   ports:
+  #     - 6979:8080
+  #   networks:
+  #     - nifinet
+  #   environment:
+  #     - NIFI_WEB_HTTP_PORT=8080
+  #     - NIFI_CLUSTER_IS_NODE=true
+  #     - NIFI_CLUSTER_NODE_PROTOCOL_PORT=8082
+  #     - NIFI_ZK_CONNECT_STRING=zookeeper:2181
+  #     - NIFI_ELECTION_MAX_WAIT=1 min
+
+  # nifi03:
+  #   image: apache/nifi:latest
+  #   ports:
+  #     - 6978:8080
+  #   networks:
+  #     - nifinet
+  #   environment:
+  #     - NIFI_WEB_HTTP_PORT=8080
+  #     - NIFI_CLUSTER_IS_NODE=true
+  #     - NIFI_CLUSTER_NODE_PROTOCOL_PORT=8082
+  #     - NIFI_ZK_CONNECT_STRING=zookeeper:2181
+  #     - NIFI_ELECTION_MAX_WAIT=1 min
+######################################################
+# NETWORK
+######################################################
+
+networks:
+  default:
+    name: airflow-network
