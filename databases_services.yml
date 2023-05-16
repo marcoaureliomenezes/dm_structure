@@ -1,5 +1,24 @@
-
+version: '2.1'
 services:
+  
+      
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: mainnet
+    volumes:
+      - /opt/mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        ["CMD", 'mysqladmin', 'ping', '-h', 'mysql', '-u', 'root', '-p$$MYSQL_ROOT_PASSWORD']
+      timeout: 45s
+      interval: 10s
+      retries: 10
 
   postgres:
     build: './docker/postgres'
@@ -33,19 +52,4 @@ services:
       timeout: 45s
       interval: 10s
       retries: 10
-
-  airflow:
-    build: ./docker/airflow
-    restart: always
-    container_name: airflow
-    volumes:
-      - ./mnt/airflow/airflow.cfg:/opt/airflow/airflow.cfg
-      - ./mnt/airflow/dags:/opt/airflow/dags
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports:
-      - 8080:8080
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "airflow", "8080" ]
-      timeout: 45s
-      interval: 10s
-      retries: 10
+      

@@ -4,12 +4,12 @@ services:
   # HADOOP SERVICES
   namenode:
     extends:
-      file: docker-ap-hadoop-services.yml
+      file: apache_hadoop_services.yml
       service: namenode
 
   datanode:
     extends:
-      file: docker-ap-hadoop-services.yml
+      file: apache_hadoop_services.yml
       service: datanode
     depends_on:
       - namenode
@@ -17,7 +17,7 @@ services:
   # HIVE SERVICES
   hive-metastore:
     extends:
-      file: docker-ap-hive-services.yml
+      file: apache_hive_services.yml
       service: hive-metastore  
     depends_on:
       - namenode
@@ -26,73 +26,52 @@ services:
 
   hive-server:
     extends:
-      file: docker-ap-hive-services.yml
+      file: apache_hive_services.yml
       service: hive-server  
     depends_on:
       - hive-metastore
 
+
+  hue:
+    extends:
+      file: apache_hadoop_services.yml
+      service: hue  
+    depends_on:
+      - hive-server
+      - postgres
+
   # SPARK SERVICES
   spark-master:
     extends:
-      file: docker-ap-spark-services.yml
+      file: apache_spark_services.yml
       service: spark-master  
 
   spark-worker:
     extends:
-      file: docker-ap-spark-services.yml
+      file: apache_spark_services.yml
       service: spark-worker
     depends_on:
       - spark-master
 
-  ######################################################
-  # UTILS SERVICES
 
-  mysql:
+  nifi-node-01:
     extends:
-      file: docker-utils-services.yml
-      service: mysql  
-
-  # hue:
-  #   extends:
-  #     file: docker-utils-services.yml
-  #     service: hue  
-  #   depends_on:
-  #     - hive-server
-  #     - postgres
-
-
-  # nifi01:
-  #   extends:
-  #     file: docker-utils-services.yml
-  #     service: nifi01
-  #   depends_on:
-  #     - zookeeper
-
-  # nifi02:
-  #   extends:
-  #     file: docker-utils-services.yml
-  #     service: nifi02
-  #   depends_on:
-  #     - zookeeper
-
-  # nifi03:
-  #   extends:
-  #     file: docker-utils-services.yml
-  #     service: nifi03
-  #   depends_on:
-  #     - zookeeper
+      file: apache_nifi_services.yml
+      service: nifi-node-01
+    depends_on:
+      - zookeeper
 
   ######################################################
   # AIRFLOW SERVICES
 
   postgres:
     extends:
-      file: docker-ap-airflow-services.yml
+      file: databases_services.yml
       service: postgres
 
   airflow:
     extends:
-      file: docker-ap-airflow-services.yml
+      file: apache_airflow_services.yml
       service: airflow
 
   ######################################################
@@ -100,19 +79,19 @@ services:
 
   zookeeper:
     extends:
-      file: docker-ap-kafka-services.yml
+      file: apache_zookeeper_services.yml
       service: zookeeper
 
   kafka:
     extends:
-      file: docker-ap-kafka-services.yml
+      file: apache_kafka_services.yml
       service: kafka
     depends_on:
       - zookeeper
 
   control-center:
     extends:
-      file: docker-ap-kafka-services.yml
+      file: apache_kafka_services.yml
       service: control-center
     depends_on:
       - kafka
