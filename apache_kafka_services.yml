@@ -8,8 +8,9 @@ services:
     ports:
       - "9092:9092"
       - "9094:9094"
-    volumes:
-      - ./mnt/kafka:/kafka
+    # volumes:
+      # - ./kafka/data:/var/lib/kafka/data
+      # - ./kafka/logs:/var/lib/kafka/logs
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
