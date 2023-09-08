@@ -25,8 +25,8 @@ def create_batch_transactions_table(network):
     return f"""
             CREATE DATABASE IF NOT EXISTS {network};
             CREATE TABLE IF NOT EXISTS {network}.batch_transactions (
-                block_number int,
-                tx_timestamp int,
+                block_number bigint,
+                tx_timestamp bigint,
                 hash string,
                 nonce int,
                 block_hash string,
@@ -36,18 +36,18 @@ def create_batch_transactions_table(network):
                 value string,
                 gas int, 
                 gas_price bigint,
-                is_error boolean,
-                txreceipt_status boolean,
+                is_error int,
+                txreceipt_status int,
                 input string,
                 contract_address string,
                 cumulative_gas_used bigint,
                 gas_used int,
                 confirmations int,
                 method_id string,
-                method_name string)
-            ROW FORMAT DELIMITED
-            FIELDS TERMINATED BY ','
-            STORED AS TEXTFILE
+                method_name string,
+                contract_alias string,
+                dat_ref_carga string)
+            STORED AS PARQUET
     """
 
 

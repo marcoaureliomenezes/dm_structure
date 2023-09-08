@@ -8,7 +8,7 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.providers.apache.hive.operators.hive import HiveOperator
 from scripts.python.ingest_contract_txs_to_hadoop import run_ingestor
-from scripts.hive.handle_hive_tables import create_batch_transactions_table
+from scripts.hive.handle_hive_tables import deleting_blockchain_database
 load_dotenv()
 
 default_args ={
@@ -45,27 +45,18 @@ with DAG(
     starting_process = BashOperator(
         task_id="starting_task",
         bash_command="""sleep 2"""
+    )   
+
+    deleting_mainnet_hive_table = HiveOperator(
+        task_id="deleting_mainnet_hive_table",
+        hive_cli_conn_id="hive_conn",
+        hql=f"""{deleting_blockchain_database('mainnet')}""",
     )
 
-    # creating_kafka_topics = DockerOperator(
-    #     task_id="creating_kafka_topics",
-    #     container_name="creating_kafka_topics",
-    #     entrypoint=["python", "-u", "1_get_and_cache_contract_txs.py"],
-    #     depends_on_past=True,
-    #     environment=dict(NETWORK = os.environ['NETWORK']),
-    #     **COMMON_PARMS
-    # )
-
-    creating_hive_batch_transactions_mainnet_table = HiveOperator(
-        task_id="creating_hive_batch_transactions_mainnet_table",
+    deleting_goerli_hive_table = HiveOperator(
+        task_id="deleting_goerli_hive_table",
         hive_cli_conn_id="hive_conn",
-        hql=f"""{create_batch_transactions_table('mainnet')}""",
-    )
-
-    creating_hive_batch_transactions_goerli_table = HiveOperator(
-        task_id="creating_hive_batch_transactions_goerli_table",
-        hive_cli_conn_id="hive_conn",
-        hql=f"""{create_batch_transactions_table('goerli')}""",
+        hql=f"""{deleting_blockchain_database('goerli')}""",
     )
 
     end_process = BashOperator(
@@ -74,5 +65,5 @@ with DAG(
     )
 
 
-    starting_process >> creating_hive_batch_transactions_mainnet_table >> creating_hive_batch_transactions_goerli_table >> end_process
+    starting_process >> deleting_mainnet_hive_table >> deleting_goerli_hive_table >> end_process
 
