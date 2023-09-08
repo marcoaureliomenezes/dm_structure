@@ -1,8 +1,5 @@
 **/__pycache__/**
 .env
 **/.env
-
-mnt/kafka/data/*
-mnt/kafka/logs/*
 .hypothesis/
 
